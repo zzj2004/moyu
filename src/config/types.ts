@@ -12,6 +12,7 @@ export interface LLMConfig {
   maxTokens?: number;
   temperature?: number;
   reasoningEffort?: 'low' | 'medium' | 'high' | 'max';
+  providerKeys?: Record<string, string>;
 }
 
 export interface MCPServerConfig {

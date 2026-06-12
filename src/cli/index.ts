@@ -134,7 +134,7 @@ async function startInteractive(state: CliState): Promise<void> {
   const rl = createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: chalk.blue('moyu> '),
+    prompt: chalk.blue('moyu ') + chalk.gray(state.llm.name + '> '),
   });
 
   safePrompt(rl);
@@ -160,7 +160,7 @@ async function startInteractive(state: CliState): Promise<void> {
 function checkImageSupport(state: CliState): boolean {
   const caps = PROVIDER_CAPS[state.llm.name];
   if (!caps?.supportsImages) {
-    console.log(chalk.yellow(`鈿狅笍  ${state.llm.displayName} does not support image input.`));
+    console.log(chalk.yellow(`⚠️  ${state.llm.displayName} does not support image input.`));
     console.log(chalk.yellow('   Switch to Kimi with: /provider kimi'));
     return false;
   }
@@ -225,8 +225,8 @@ function doAutoSave(state: CliState): void {
 function showStatus(state: CliState): void {
   const mode = state.permissionMode === 'trusted' ? chalk.green('Trusted') : chalk.yellow('Confirm');
   const llmObj = state.llm as any;
-  const thinking = llmObj.thinkingOn ? chalk.cyan('🧠 ON') : chalk.gray('OFF');
-  const search = llmObj.webSearchOn ? chalk.cyan('🔍 ON') : chalk.gray('OFF');
+  const thinking = llmObj.thinkingOn ? chalk.cyan('ON') : chalk.gray('OFF');
+  const search = llmObj.webSearchOn ? chalk.cyan('ON') : chalk.gray('OFF');
   const effort = llmObj._reasoningEffort ? chalk.gray(' [' + llmObj._reasoningEffort + ']') : '';
   console.log(chalk.gray(`Provider: ${state.llm.displayName} | Model: ${state.llm.model} | Mode: ${mode} | Thinking: ${thinking}${effort} | Search: ${search}`));
 }
@@ -340,7 +340,7 @@ async function handleCommand(input: string, state: CliState, rl: { prompt(): voi
       if (!session) { console.log(chalk.red('Session not found: ' + arg)); break; }
       // Restore messages
       state.messages = (session.messages || []).map(m => ({
-        role: m.role as 'user' | 'assistant' | 'system',
+        role: m.role as 'user' | 'assistant' | 'system' | 'tool',
         content: m.content,
       }));
       console.log(chalk.green(`Session loaded: "${session.sessionId}" (${state.messages.length} messages)`));

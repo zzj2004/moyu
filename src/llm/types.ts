@@ -2,7 +2,7 @@
  * moyu - LLM type definitions
  */
 
-export type MessageRole = 'system' | 'user' | 'assistant';
+export type MessageRole = 'system' | 'user' | 'assistant' | 'tool';
 
 export type ContentPart =
   | { type: 'text'; text: string }
@@ -11,6 +11,9 @@ export type ContentPart =
 export interface Message {
   role: MessageRole;
   content: string | ContentPart[];
+  tool_call_id?: string;
+  tool_calls?: ToolCall[];
+  name?: string;
 }
 
 export interface ToolCall {

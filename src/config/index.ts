@@ -31,7 +31,12 @@ export function loadConfig(): MoyuConfig {
       let fileContent = readFileSync(CONFIG_FILE, 'utf-8');
       if (fileContent.charCodeAt(0) === 0xFEFF) fileContent = fileContent.slice(1);
       const userConfig = JSON.parse(fileContent) as Partial<MoyuConfig>;
-      if (userConfig.llm) Object.assign(config.llm, userConfig.llm);
+      if (userConfig.llm) {
+      Object.assign(config.llm, userConfig.llm);
+      if (userConfig.providerKeys) {
+        config.llm.providerKeys = { ...userConfig.providerKeys };
+      }
+    }
       if (userConfig.providerKeys) config.providerKeys = { ...userConfig.providerKeys };
       if (userConfig.permissionMode) config.permissionMode = userConfig.permissionMode;
       if (userConfig.mcpServers) config.mcpServers = userConfig.mcpServers;
@@ -50,6 +55,11 @@ export function loadConfig(): MoyuConfig {
   if (process.env.MOYU_PROVIDER) config.llm.provider = process.env.MOYU_PROVIDER;
   if (process.env.MOYU_PERMISSION_MODE) config.permissionMode = process.env.MOYU_PERMISSION_MODE as PermissionLevel;
   if (process.env.MOYU_MAX_TOKENS) config.llm.maxTokens = parseInt(process.env.MOYU_MAX_TOKENS);
+
+  // Sync llm.providerKeys from top-level providerKeys
+  if (!config.llm.providerKeys && config.providerKeys) {
+    config.llm.providerKeys = { ...config.providerKeys };
+  }
 
   // Per-provider env vars (e.g. MOYU_KIMI_API_KEY, MOYU_DEEPSEEK_API_KEY)
   if (!config.providerKeys) config.providerKeys = {};

@@ -95,7 +95,6 @@ export async function runAgent(ctx: AgentContext, userInput: string): Promise<vo
     };
     const tools = ctx.registry.getToolDefinitions();
 
-    let streamBuffer = '';
     process.stdout.write(chalk.cyan('|') + chalk.bold('moyu ') + chalk.gray('> '));
 
     try {
@@ -104,7 +103,6 @@ export async function runAgent(ctx: AgentContext, userInput: string): Promise<vo
         tools,
         {
           onText: (chunk: string) => {
-            streamBuffer += chunk;
             process.stdout.write(chunk);
           },
           onToolCall: (toolCall) => {
@@ -120,29 +118,36 @@ export async function runAgent(ctx: AgentContext, userInput: string): Promise<vo
       break;
     }
 
-    if (response.content) {
-      ctx.messages.push({ role: 'assistant', content: response.content });
+    // Push assistant message if there's content or tool calls
+    if (response.content || (response.toolCalls && response.toolCalls.length > 0)) {
+      ctx.messages.push({
+        role: 'assistant',
+        content: response.content || '',
+        tool_calls: response.toolCalls,
+      });
     }
 
+    // Handle tool calls
     if (response.toolCalls && response.toolCalls.length > 0) {
       for (const toolCall of response.toolCalls) {
         const result = await handleToolCall(ctx, toolCall);
-        ctx.messages.push({
-          role: 'assistant',
-          content: `Tool ${toolCall.function.name} result: ${result.success ? 'Success' : 'Failed'}\n${result.output || result.error}`,
-        });
         if (result.error) {
           console.log(chalk.red('  !!') + chalk.bold(toolCall.function.name) + ': ' + result.error);
         } else {
           console.log(chalk.green('  v') + chalk.bold(toolCall.function.name) + ' completed');
         }
+        ctx.messages.push({
+          role: 'tool',
+          content: result.output || result.error || '',
+          tool_call_id: toolCall.id,
+        });
       }
-      continue;
+      continue; // Continue loop to send tool results back to LLM
     }
 
-    if (!response.toolCalls || response.toolCalls.length === 0) {
-      if (response.stopReason === 'end_turn' || !response.content) break;
-    }
+    // No tool calls - end turn
+    if (!response.content) break;
+    if (response.stopReason === 'end_turn') break;
   }
 
   if (turnCount >= maxTurns) {
@@ -151,12 +156,16 @@ export async function runAgent(ctx: AgentContext, userInput: string): Promise<vo
 }
 
 async function handleToolCall(ctx: AgentContext, toolCall: ToolCall): Promise<ToolResult> {
+  // $web_search is a builtin function handled by the Kimi API internally.
+  // The API returns search results in the tool call arguments.
   if (toolCall.function.name === '$web_search') {
     console.log(chalk.dim('  ~') + chalk.cyan('Web search') + chalk.gray(' completed'));
+    // Pass through actual search results from the API response
+    const searchData = toolCall.function.arguments;
     return {
       toolName: '$web_search',
       success: true,
-      output: 'Web search results: ' + toolCall.function.arguments,
+      output: searchData,
     };
   }
 
@@ -186,14 +195,14 @@ async function handleToolCall(ctx: AgentContext, toolCall: ToolCall): Promise<To
 export function printBanner(): void {
   console.log('');
   console.log(chalk.cyan('  ╔══════════════════════════════════════╗'));
-  console.log(chalk.cyan('  ║    ███╗   ███╗ ██████╗ ██╗   ██╗   ║'));
-  console.log(chalk.cyan('  ║    ████╗ ████║██╔═══██╗╚██╗ ██╔╝   ║'));
-  console.log(chalk.cyan('  ║    ██╔████╔██║██║   ██║ ╚████╔╝    ║'));
-  console.log(chalk.cyan('  ║    ██║╚██╔╝██║██║   ██║  ╚██╔╝     ║'));
-  console.log(chalk.cyan('  ║    ██║ ╚═╝ ██║╚██████╔╝   ██║      ║'));
-  console.log(chalk.cyan('  ║    ╚═╝     ╚═╝ ╚═════╝    ╚═╝      ║'));
+  console.log(chalk.cyan('  ║  ███╗   ███╗ ██████╗ ██╗   ██╗██╗   ║'));
+  console.log(chalk.cyan('  ║  ████╗ ████║██╔═══██╗╚██╗ ██╔╝██║   ║'));
+  console.log(chalk.cyan('  ║  ██╔████╔██║██║   ██║ ╚████╔╝ ██║   ║'));
+  console.log(chalk.cyan('  ║  ██║╚██╔╝██║██║   ██║  ╚██╔╝  ██║   ║'));
+  console.log(chalk.cyan('  ║  ██║ ╚═╝ ██║╚██████╔╝   ██║   ██║   ║'));
+  console.log(chalk.cyan('  ║  ╚═╝     ╚═╝ ╚═════╝    ╚═╝   ╚═╝   ║'));
   console.log(chalk.cyan('  ╚══════════════════════════════════════╝'));
   console.log(chalk.gray('         Terminal AI Coding Agent'));
-  console.log(chalk.gray('         ------------------------'));
+  console.log(chalk.gray('         v0.1.0  |  MIT License'));
   console.log('');
 }

@@ -206,31 +206,55 @@ export class OpenAICompatibleProvider implements LLMProvider {
 
   private formatMessages(messages: Message[]): ChatMessage[] {
     return messages.map(m => {
-      // Simple text message
+      // Build the chat message
+      const chatMsg: Record<string, unknown> = { role: m.role };
+
+      // Handle content
       if (typeof m.content === 'string') {
-        return { role: m.role, content: m.content };
+        chatMsg.content = m.content;
+      } else if (Array.isArray(m.content)) {
+        const parts = m.content.map(part => {
+          if (part.type === 'text') {
+            return { type: 'text', text: part.text };
+          }
+          if (part.type === 'image_url') {
+            return {
+              type: 'image_url',
+              image_url: {
+                url: part.image_url.url,
+                detail: part.image_url.detail || 'auto',
+              },
+            };
+          }
+          return { type: 'text', text: '' };
+        });
+        chatMsg.content = parts;
       }
-      // Multi-modal message with ContentPart[]
-      const parts = m.content.map(part => {
-        if (part.type === 'text') {
-          return { type: 'text', text: part.text };
-        }
-        if (part.type === 'image_url') {
-          return {
-            type: 'image_url',
-            image_url: {
-              url: part.image_url.url,
-              detail: part.image_url.detail || 'auto',
-            },
-          };
-        }
-        return { type: 'text', text: '' };
-      });
-      return { role: m.role, content: parts };
+
+      // Tool call response
+      if (m.tool_call_id) {
+        chatMsg.tool_call_id = m.tool_call_id;
+      }
+
+      // Assistant tool calls
+      if (m.tool_calls && m.tool_calls.length > 0) {
+        chatMsg.tool_calls = m.tool_calls.map(tc => ({
+          id: tc.id,
+          type: tc.type,
+          function: {
+            name: tc.function.name,
+            arguments: tc.function.arguments,
+          },
+        }));
+        // Kimi thinking models require reasoning_content for tool call messages
+        chatMsg.reasoning_content = '';
+      }
+
+      return chatMsg as unknown as ChatMessage;
     });
   }
 
-  private buildBody(messages: Message[], tools?: ToolDefinition[], stream?: boolean): Record<string, unknown> {
+    private buildBody(messages: Message[], tools?: ToolDefinition[], stream?: boolean): Record<string, unknown> {
     const chatMessages = this.formatMessages(messages);
     const body: Record<string, unknown> = {
       model: this._model,
@@ -238,27 +262,36 @@ export class OpenAICompatibleProvider implements LLMProvider {
       max_tokens: this.maxTokens,
       stream: stream ?? false,
     };
+    const bodyTools: unknown[] = [];
+
     // Add reasoning_effort for thinking models
     const modelCaps = MODEL_CAPS[this._model];
     if (this._reasoningOn && modelCaps?.supportsThinkingEffort) {
       body.reasoning_effort = this._reasoningEffort || 'high';
     }
 
-    // Enable web search (Kimi only: uses builtin_function $web_search)
+    // Enable web search builtin (Kimi only: uses builtin_function $web_search)
     if (this._webSearchOn && PROVIDER_CAPS[this.name]?.supportsWebSearch) {
-      if (!body.tools) body.tools = [];
-      (body.tools as any[]).push({
+      bodyTools.push({
         type: 'builtin_function',
         function: { name: '$web_search' },
       });
     }
 
+    // Add regular function tools alongside web_search
     if (tools && tools.length > 0) {
-      body.tools = tools.map(t => ({
-        type: 'function',
-        function: { name: t.name, description: t.description, parameters: t.inputSchema },
-      }));
+      for (const t of tools) {
+        bodyTools.push({
+          type: 'function',
+          function: { name: t.name, description: t.description, parameters: t.inputSchema },
+        });
+      }
     }
+
+    if (bodyTools.length > 0) {
+      body.tools = bodyTools;
+    }
+
     return body;
   }
 

@@ -1,5 +1,5 @@
 ﻿{
-    "name":  "moyu",
+    "name":  "moyu-agent",
     "version":  "0.1.0",
     "description":  "Terminal AI coding agent with MCP support",
     "main":  "./dist/index.js",

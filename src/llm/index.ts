@@ -25,11 +25,14 @@ function getProviderInfo(name: string, config: LLMConfig): ProviderInfo {
 export function createLLM(config: LLMConfig): LLMProvider {
   const info = getProviderInfo(config.provider, config);
 
+  // Use provider-specific API key if available in providerKeys map
+  const apiKey = (config.providerKeys && config.providerKeys[config.provider]) || config.apiKey;
+
   return new OpenAICompatibleProvider({
     name: info.name,
     displayName: info.displayName,
-    apiKey: config.apiKey,
-    baseUrl: config.baseUrl || info.baseUrl,
+    apiKey,
+    baseUrl: info.baseUrl,  // Use builtin provider's baseUrl for known providers
     model: config.model || info.defaultModel,
     availableModels: info.models,
     maxTokens: config.maxTokens || info.maxTokens,
