@@ -133,7 +133,7 @@ async function runAll() {
 
   await assert("git_log (Windows fix)", async () => {
     const r = await registry.executeTool("git_log", { count: 2 }, toolCtx);
-    return r.success && r.output.includes("0.2.0");
+    return r.success && r.output.match(/[a-f0-9]{7} /) !== null;
   });
 
   await assert("git_diff", async () => {
@@ -167,12 +167,12 @@ async function runAll() {
   });
 
   // ====== 6. Version ======
-  await assert("package.json version 0.2.0", () => {
-    return JSON.parse(readFileSync("package.json", "utf-8")).version === "0.2.0";
+  await assert("package.json version 0.3.0", () => {
+    return JSON.parse(readFileSync("package.json", "utf-8")).version === "0.3.0";
   });
 
-  await assert("Banner v0.2.0", () => {
-    return readFileSync("src/agent/index.ts", "utf-8").includes("v0.2.0");
+  await assert("Banner v0.3.0", () => {
+    return readFileSync("src/agent/index.ts", "utf-8").includes("v0.3.0");
   });
 
   await assert("MCP server exists", () => {

@@ -61,13 +61,15 @@ export interface ProviderCapabilities {
 }
 
 export const PROVIDER_CAPS: Record<string, ProviderCapabilities> = {
-  deepseek: { supportsImages: false, supportsVideo: false, supportsThinking: false, supportsThinkingEffort: false, supportsWebSearch: false },
+  deepseek: { supportsImages: false, supportsVideo: false, supportsThinking: true, supportsThinkingEffort: true, supportsWebSearch: false },
   kimi: { supportsImages: true, supportsVideo: true, supportsThinking: true, supportsThinkingEffort: false, supportsWebSearch: true },
   openai: { supportsImages: true, supportsVideo: false, supportsThinking: true, supportsThinkingEffort: true, supportsWebSearch: false },
   ollama: { supportsImages: false, supportsVideo: false, supportsThinking: false, supportsThinkingEffort: false, supportsWebSearch: false },
 };
 
 export const MODEL_CAPS: Record<string, { supportsThinking: boolean; supportsThinkingEffort: boolean }> = {
+  'deepseek-chat': { supportsThinking: false, supportsThinkingEffort: false },
+  'deepseek-coder': { supportsThinking: false, supportsThinkingEffort: false },
   'deepseek-v4-pro': { supportsThinking: true, supportsThinkingEffort: true },
   'deepseek-v4-flash': { supportsThinking: true, supportsThinkingEffort: false },
   'deepseek-reasoner': { supportsThinking: true, supportsThinkingEffort: true },

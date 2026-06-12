@@ -179,12 +179,12 @@ export async function runAgent(ctx: AgentContext, userInput: string): Promise<vo
 async function handleToolCall(ctx: AgentContext, toolCall: ToolCall): Promise<ToolResult> {
   // $web_search is a builtin function handled by the Kimi API internally.
   // The API returns search results in the tool call arguments.
-  if (toolCall.function.name === '$web_search') {
+  if (toolCall.function.name === 'web_search' || toolCall.function.name === '$web_search') {
     console.log(chalk.dim('  ~') + chalk.cyan('Web search') + chalk.gray(' completed'));
     // Pass through actual search results from the API response
     const searchData = toolCall.function.arguments;
     return {
-      toolName: '$web_search',
+      toolName: 'web_search',
       success: true,
       output: searchData,
     };
@@ -224,6 +224,6 @@ export function printBanner(): void {
   console.log(chalk.cyan('  ║  ╚═╝     ╚═╝ ╚═════╝    ╚═╝   ╚═╝   ║'));
   console.log(chalk.cyan('  ╚══════════════════════════════════════╝'));
   console.log(chalk.gray('         Terminal AI Coding Agent'));
-  console.log(chalk.gray('         v0.2.0  |  MIT License'));
+  console.log(chalk.gray('         v0.3.0  |  MIT License'));
   console.log('');
 }
