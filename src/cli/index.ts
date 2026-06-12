@@ -250,7 +250,7 @@ async function handleCommand(input: string, state: CliState, rl: { prompt(): voi
     case 'help':
       console.log(`
 ── Provider & Model ──
-  /provider [name]      Show/Switch provider (deepseek, kimi, openai)
+  /provider [name]      Show/Switch provider (deepseek, kimi, openai, ollama)
   /model [name]         Show/Switch model
   /models               List models for current provider
   /providers            List providers with config status

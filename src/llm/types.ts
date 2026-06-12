@@ -64,6 +64,7 @@ export const PROVIDER_CAPS: Record<string, ProviderCapabilities> = {
   deepseek: { supportsImages: false, supportsVideo: false, supportsThinking: false, supportsThinkingEffort: false, supportsWebSearch: false },
   kimi: { supportsImages: true, supportsVideo: true, supportsThinking: true, supportsThinkingEffort: false, supportsWebSearch: true },
   openai: { supportsImages: true, supportsVideo: false, supportsThinking: true, supportsThinkingEffort: true, supportsWebSearch: false },
+  ollama: { supportsImages: false, supportsVideo: false, supportsThinking: false, supportsThinkingEffort: false, supportsWebSearch: false },
 };
 
 export const MODEL_CAPS: Record<string, { supportsThinking: boolean; supportsThinkingEffort: boolean }> = {
@@ -102,6 +103,15 @@ export const BUILTIN_PROVIDERS: Record<string, ProviderInfo> = {
     models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o3-mini', 'o1'],
     defaultModel: 'gpt-4o',
     maxTokens: 16384,
+  },
+    ollama: {
+    name: 'ollama',
+    displayName: 'Ollama (Local)',
+    baseUrl: 'http://localhost:11434/v1',
+    models: ['llama3', 'llama3.1', 'qwen2.5', 'mistral', 'codellama', 'deepseek-coder-v2'],
+    defaultModel: 'llama3',
+    maxTokens: 8192,
+    defaultTemperature: 0.7,
   },
 };
 
