@@ -242,6 +242,47 @@ function showStatus(state: CliState): void {
   console.log(chalk.gray(`Provider: ${state.llm.displayName} | Model: ${state.llm.model} | Mode: ${mode} | Thinking: ${thinking}${effort} | Search: ${search}`));
 }
 
+
+
+
+/** Interactive list selector - arrow keys select, Enter confirms, q/ESC cancels */
+async function interactiveSelect(items: string[], current: string, title: string): Promise<string | null> {
+  const stdin = process.stdin;
+  const wasRaw = stdin.isRaw;
+  let selected = Math.max(0, items.indexOf(current));
+
+  const render = () => {
+    process.stdout.write('\x1B[' + items.length + 'A\x1B[J');
+    console.log(chalk.cyan(title));
+    items.forEach((item, i) => {
+      const prefix = i === selected ? chalk.green('  ▸ ') : '    ';
+      const suffix = item === current ? chalk.gray(' (current)') : '';
+      const style = i === selected ? chalk.bold : chalk.reset;
+      process.stdout.write(prefix + style(item) + suffix + '\n');
+    });
+  };
+
+  return new Promise((resolve) => {
+    const onData = (buf: Buffer) => {
+      const key = buf.toString();
+      if (key === '\u001b[A') { selected = Math.max(0, selected - 1); render(); }
+      else if (key === '\u001b[B') { selected = Math.min(items.length - 1, selected + 1); render(); }
+      else if (key === '\r' || key === '\n') { cleanup(); resolve(items[selected]); }
+      else if (key === '\u0003' || key === 'q' || key === '\u001b') { cleanup(); resolve(null); }
+    };
+    const cleanup = () => {
+      stdin.removeListener('data', onData);
+      if (!wasRaw) try { stdin.setRawMode(false); } catch {}
+      stdin.pause();
+    };
+    render();
+    stdin.setRawMode(true);
+    stdin.resume();
+    stdin.on('data', onData);
+  });
+}
+
+
 async function handleCommand(input: string, state: CliState, rl: { prompt(): void }): Promise<void> {
   const parts = input.slice(1).split(' ');
   const cmd = parts[0];
@@ -295,13 +336,22 @@ async function handleCommand(input: string, state: CliState, rl: { prompt(): voi
       }
       break;
 
-    case 'models':
-      console.log(chalk.cyan(`Available models for ${state.llm.displayName}:`));
-      for (const m of state.llm.availableModels) {
-        const marker = m === state.llm.model ? chalk.green(' <--') : '';
-        console.log(`  - ${m}${marker}`);
+    case 'models': {
+      const modelList = state.llm.availableModels;
+      const picked = await interactiveSelect(
+        modelList,
+        state.llm.model,
+        `Available for ${state.llm.displayName} (↑↓ to move, Enter to select, q to cancel):`
+      );
+      if (picked && picked !== state.llm.model) {
+        state.llm.setModel(picked);
+        state.messages = [];
+        console.log(chalk.green('\nSwitched model to: ' + picked));
+      } else if (picked) {
+        console.log(chalk.gray('\nAlready using this model.'));
       }
       break;
+    }
 
     case 'provider':
       if (!arg) {
