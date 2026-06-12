@@ -245,6 +245,20 @@ function showStatus(state: CliState): void {
 
 
 
+/** Save current LLM config to ~/.moyu/config.json so changes persist after restart */
+async function persistConfig(config: import('../config/types.js').MoyuConfig): Promise<void> {
+  try {
+    const { writeFileSync, existsSync, mkdirSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { homedir } = await import('node:os');
+    const dir = join(homedir(), '.moyu');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, 'config.json'), JSON.stringify(config, null, 2), 'utf-8');
+  } catch (e) {
+    console.log(chalk.red('Failed to save config: ' + (e as Error).message));
+  }
+}
+
 /** Interactive list selector - arrow keys select, Enter confirms, q/ESC cancels */
 async function interactiveSelect(items: string[], current: string, title: string): Promise<string | null> {
   const stdin = process.stdin;
@@ -273,7 +287,6 @@ async function interactiveSelect(items: string[], current: string, title: string
     const cleanup = () => {
       stdin.removeListener('data', onData);
       if (!wasRaw) try { stdin.setRawMode(false); } catch {}
-      stdin.pause();
     };
     render();
     stdin.setRawMode(true);
@@ -332,6 +345,8 @@ async function handleCommand(input: string, state: CliState, rl: { prompt(): voi
       } else {
         state.llm.setModel(arg);
         state.messages = [];
+        state.config.llm.model = arg;
+        await persistConfig(state.config);
         console.log(chalk.green(`Switched model to: ${arg}`));
       }
       break;
@@ -346,6 +361,8 @@ async function handleCommand(input: string, state: CliState, rl: { prompt(): voi
       if (picked && picked !== state.llm.model) {
         state.llm.setModel(picked);
         state.messages = [];
+        state.config.llm.model = picked;
+        await persistConfig(state.config);
         console.log(chalk.green('\nSwitched model to: ' + picked));
       } else if (picked) {
         console.log(chalk.gray('\nAlready using this model.'));
@@ -361,6 +378,9 @@ async function handleCommand(input: string, state: CliState, rl: { prompt(): voi
         if (newProvider) {
           state.llm = newProvider;
           state.messages = [];
+          state.config.llm.provider = newProvider.name;
+          state.config.llm.model = newProvider.model;
+          await persistConfig(state.config);
           console.log(chalk.green(`Switched provider to: ${newProvider.displayName}`));
           console.log(chalk.gray(`  Model: ${newProvider.model}`));
         }
