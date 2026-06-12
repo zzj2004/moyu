@@ -1,0 +1,29 @@
+﻿# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+*.swp
+*.swo
+
+# moyu project sessions
+.moyu/sessions/
+
+# Config overrides
+moyu.config.json
+moyu.config.local.json
