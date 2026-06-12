@@ -5,7 +5,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import chalk from 'chalk';
-import { loadConfig, getProviderApiKey } from '../config/index.js';
+import { loadConfig, getProviderApiKey, initConfig } from '../config/index.js';
 import { createLLM } from '../llm/index.js';
 import { BUILTIN_PROVIDERS, PROVIDER_CAPS, MODEL_CAPS, type ContentPart } from '../llm/types.js';
 import { listProviders as getProviders } from '../llm/index.js';
@@ -29,7 +29,7 @@ interface CliState {
   lastSavedCount: number;
 }
 
-function parseArgs(): { nonInteractive?: string; help?: boolean; version?: boolean } {
+function parseArgs(): { nonInteractive?: string; help?: boolean; version?: boolean; init?: boolean } {
   const args = process.argv.slice(2);
   const result: Record<string, string | boolean> = {};
   for (let i = 0; i < args.length; i++) {
@@ -48,6 +48,7 @@ function printHelp(): void {
   console.log(`Usage: moyu [options] [prompt]
 
 Options:
+  --init                Create default config at ~/.moyu/config.json
   -p, --prompt <text>   Non-interactive mode
   -h, --help            Show help
   -v, --version         Show version
@@ -504,6 +505,7 @@ export async function runCLI(): Promise<void> {
 
   if (args.help) { printHelp(); process.exit(0); }
   if (args.version) { printVersion(); process.exit(0); }
+  if (args.init) { initConfig(); process.exit(0); }
 
   const config = loadConfig();
 
