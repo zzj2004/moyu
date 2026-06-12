@@ -1,4 +1,4 @@
-﻿/**
+/**
  * moyu - OpenAI-compatible LLM provider with streaming
  * Works with DeepSeek, Kimi (Moonshot), OpenAI, etc.
  */

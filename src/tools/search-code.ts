@@ -1,4 +1,4 @@
-﻿/**
+/**
  * moyu - Search code tool
  * Uses ripgrep (rg) or fallback to PowerShell Select-String on Windows
  */

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * moyu - List directory contents tool
  */
 

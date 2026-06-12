@@ -1,4 +1,4 @@
-﻿/**
+/**
  * moyu - Session history: project-level + global dual-path storage
  *
  * Project-level:  {cwd}/.moyu/sessions/  — per-project conversation history

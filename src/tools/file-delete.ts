@@ -1,4 +1,4 @@
-﻿/**
+/**
  * moyu - Delete file tool (safe: only files and empty directories)
  */
 

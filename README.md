@@ -1,4 +1,4 @@
-﻿# moyu 🐟
+# moyu 🐟
 
 > 终端里的 AI 编程助手 — Terminal AI Coding Agent
 
