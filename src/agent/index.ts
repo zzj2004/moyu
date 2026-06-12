@@ -1,4 +1,4 @@
-﻿/**
+/**
  * moyu - Agent core loop
  */
 
@@ -56,6 +56,7 @@ MCP: external tools loaded dynamically via Model Context Protocol
 `;
 
 export interface AgentContext {
+  usage?: { promptTokens: number; completionTokens: number; totalTokens: number; };
   config: MoyuConfig;
   projectDir: string;
   llm: LLMProvider;
@@ -119,6 +120,7 @@ export async function runAgent(ctx: AgentContext, userInput: string): Promise<vo
     process.stdout.write(chalk.cyan('|') + chalk.bold('moyu ') + chalk.gray('> '));
 
     try {
+      const usageCb = (u: any) => { if (!ctx.usage) ctx.usage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 }; ctx.usage.promptTokens += u.promptTokens || 0; ctx.usage.completionTokens += u.completionTokens || 0; ctx.usage.totalTokens += u.totalTokens || 0; };
       response = await ctx.llm.chatStream(
         [systemMsg, ...ctx.messages],
         tools,
@@ -126,6 +128,7 @@ export async function runAgent(ctx: AgentContext, userInput: string): Promise<vo
           onText: (chunk: string) => {
             process.stdout.write(chunk);
           },
+          onUsage: usageCb,
           onToolCall: (toolCall) => {
             console.log('');
             console.log(chalk.dim('  ~') + chalk.yellow('Preparing: ') + chalk.cyan(toolCall.function.name) + chalk.gray('...'));

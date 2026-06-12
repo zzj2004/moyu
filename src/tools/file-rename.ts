@@ -1,4 +1,4 @@
-﻿/**
+/**
  * moyu - Rename/move file tool
  */
 

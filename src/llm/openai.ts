@@ -1,4 +1,4 @@
-﻿/**
+/**
  * moyu - OpenAI-compatible LLM provider with streaming
  * Works with DeepSeek, Kimi (Moonshot), OpenAI, etc.
  */
@@ -201,7 +201,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
       }
     }
 
-    return { content: fullContent, toolCalls: toolCalls.length > 0 ? toolCalls : undefined, stopReason };
+    return { content: fullContent, toolCalls: toolCalls.length > 0 ? toolCalls : undefined, stopReason, usage: undefined };
   }
 
   private formatMessages(messages: Message[]): ChatMessage[] {

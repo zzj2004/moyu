@@ -26,12 +26,21 @@ export interface ToolCall {
 }
 
 export interface LLMResponse {
+  usage?: TokenUsage;
   content: string;
   toolCalls?: ToolCall[];
   stopReason?: 'end_turn' | 'tool_use' | 'max_tokens';
 }
 
+
+export interface TokenUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
 export interface StreamCallbacks {
+  onUsage?: (usage: TokenUsage) => void;
   onText?: (text: string) => void;
   onToolCall?: (toolCall: ToolCall) => void;
 }

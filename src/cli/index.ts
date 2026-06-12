@@ -1,4 +1,4 @@
-﻿/**
+/**
  * moyu - CLI entry point
  */
 

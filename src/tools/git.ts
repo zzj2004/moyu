@@ -1,4 +1,4 @@
-﻿import { spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import type { Tool, ToolResult, ToolContext } from "./types.js";
 
 function runGit(args: string[], cwd: string, timeout = 15000): string {
