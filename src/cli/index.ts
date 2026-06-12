@@ -137,6 +137,15 @@ async function startInteractive(state: CliState): Promise<void> {
     prompt: chalk.blue('moyu ') + chalk.gray(state.llm.name + '> '),
   });
 
+  // Handle Ctrl+C gracefully
+  rl.on('SIGINT', () => {
+    console.log('');
+    console.log(chalk.blue('Goodbye!'));
+    doAutoSave(state);
+    state.registry.cleanup();
+    process.exit(0);
+  });
+
   safePrompt(rl);
 
   for await (const line of rl) {
