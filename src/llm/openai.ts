@@ -97,7 +97,8 @@ export class OpenAICompatibleProvider implements LLMProvider {
         id: tc.id, type: 'function' as const,
         function: { name: tc.function.name, arguments: tc.function.arguments },
       })),
-      stopReason: this.mapFinishReason(choice?.finish_reason),
+            stopReason: this.mapFinishReason(choice?.finish_reason),
+      usage: data.usage ? { promptTokens: data.usage.prompt_tokens, completionTokens: data.usage.completion_tokens, totalTokens: data.usage.total_tokens } : undefined,
     };
   }
 
@@ -201,7 +202,19 @@ export class OpenAICompatibleProvider implements LLMProvider {
       }
     }
 
-    return { content: fullContent, toolCalls: toolCalls.length > 0 ? toolCalls : undefined, stopReason, usage: undefined };
+        // Check final buffer for usage data (last chunk before [DONE])
+    let finalUsage = undefined;
+    try {
+      const lastLine = buffer.trim().split('\n').pop() || "";
+      if (lastLine.startsWith('data: ') && !lastLine.includes('[DONE]')) {
+        const lastData = JSON.parse(lastLine.slice(6));
+        if (lastData.usage) {
+          finalUsage = { promptTokens: lastData.usage.prompt_tokens, completionTokens: lastData.usage.completion_tokens, totalTokens: lastData.usage.total_tokens };
+          callbacks.onUsage?.(finalUsage);
+        }
+      }
+    } catch {}
+    return { content: fullContent, toolCalls: toolCalls.length > 0 ? toolCalls : undefined, stopReason, usage: finalUsage /* streaming usage captured via onUsage callback */ };
   }
 
   private formatMessages(messages: Message[]): ChatMessage[] {

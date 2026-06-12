@@ -14,7 +14,7 @@ import { OpenAICompatibleProvider } from '../llm/openai.js';
 import { ToolRegistry } from '../tools/index.js';
 import { runAgent, printBanner, type AgentContext } from '../agent/index.js';
 import { readFileSync as fsReadFileSync, existsSync as fsExistsSync } from 'node:fs';
-import type { LLMProvider } from '../llm/types.js';
+import type { LLMProvider, TokenUsage } from '../llm/types.js';
 import type { MoyuConfig } from '../config/types.js';
 
 interface CliState {
@@ -27,6 +27,8 @@ interface CliState {
   sessionId: string;
   /** Track message count for auto-save debounce */
   lastSavedCount: number;
+  usage?: TokenUsage;
+  lastContextWarning: number;
 }
 
 function parseArgs(): { nonInteractive?: string; help?: boolean; version?: boolean; init?: boolean } {
@@ -239,7 +241,8 @@ function showStatus(state: CliState): void {
   const thinking = llmObj.thinkingOn ? chalk.cyan('ON') : chalk.gray('OFF');
   const search = llmObj.webSearchOn ? chalk.cyan('ON') : chalk.gray('OFF');
   const effort = llmObj._reasoningEffort ? chalk.gray(' [' + llmObj._reasoningEffort + ']') : '';
-  console.log(chalk.gray(`Provider: ${state.llm.displayName} | Model: ${state.llm.model} | Mode: ${mode} | Thinking: ${thinking}${effort} | Search: ${search}`));
+  const tokens = state.usage ? chalk.gray(' | Tokens: ') + String(state.usage.totalTokens) : '';
+  console.log(chalk.gray(`Provider: ${state.llm.displayName} | Model: ${state.llm.model} | Mode: ${mode} | Thinking: ${thinking}${effort} | Search: ${search}`) + tokens);
 }
 
 
@@ -517,7 +520,32 @@ async function handleCommand(input: string, state: CliState, rl: { prompt(): voi
       console.log(chalk.yellow('Switched to confirm mode.'));
       break;
 
+    
+    case 'tokens': {
+      if (!state.usage) { console.log(chalk.gray('No API calls made yet.')); break; }
+      const u = state.usage;
+      console.log(chalk.cyan('Token Usage:'));
+      console.log('  Prompt:      ' + u.promptTokens);
+      console.log('  Completion:  ' + u.completionTokens);
+      console.log('  Total:       ' + u.totalTokens);
+      const limits: Record<string, number> = {
+        'deepseek-chat': 1048576, 'deepseek-coder': 1048576, 'deepseek-v4-pro': 1048576,
+        'deepseek-v4-flash': 1048576, 'deepseek-reasoner': 1048576,
+        'kimi-k2.6': 262144, 'kimi-k2.5': 131072,
+        'gpt-4o': 128000, 'gpt-4o-mini': 128000, 'o1': 200000, 'o3-mini': 200000,
+      };
+      const limit = limits[state.llm.model] || 128000;
+      const pct = Math.round((u.totalTokens / limit) * 100);
+      const barLen = 20;
+      const filled = Math.min(barLen, Math.round((pct / 100) * barLen));
+      const bar = chalk.green('|'.repeat(filled)) + chalk.gray('.'.repeat(barLen - filled));
+      console.log('  Context:     [' + bar + '] ' + pct + '% of ' + Math.round(limit / 1000) + 'k');
+      if (pct > 80) console.log(chalk.yellow('  !! Approaching context limit. Use /clear to reset.'));
+      break;
+    }
+
     case 'status':
+
       showStatus(state);
       break;
 
@@ -587,6 +615,8 @@ export async function runCLI(): Promise<void> {
     projectDir: config.workDir || process.cwd(),
     registry,
     permissionMode: config.permissionMode,
+    usage: undefined,
+    lastContextWarning: 0,
     messages: [],
     sessionId: new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19),
     lastSavedCount: 0,
