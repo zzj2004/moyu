@@ -63,6 +63,7 @@ export interface ProviderCapabilities {
 export const PROVIDER_CAPS: Record<string, ProviderCapabilities> = {
   deepseek: { supportsImages: false, supportsVideo: false, supportsThinking: false, supportsThinkingEffort: false, supportsWebSearch: false },
   kimi: { supportsImages: true, supportsVideo: true, supportsThinking: true, supportsThinkingEffort: false, supportsWebSearch: true },
+  openai: { supportsImages: true, supportsVideo: false, supportsThinking: true, supportsThinkingEffort: true, supportsWebSearch: false },
 };
 
 export const MODEL_CAPS: Record<string, { supportsThinking: boolean; supportsThinkingEffort: boolean }> = {
