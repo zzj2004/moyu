@@ -1,4 +1,4 @@
-﻿/**
+/**
  * moyu - LLM type definitions
  */
 
@@ -92,6 +92,14 @@ export const BUILTIN_PROVIDERS: Record<string, ProviderInfo> = {
     maxTokens: 8192,
     defaultTemperature: 1,
   },
+  openai: {
+    name: 'openai',
+    displayName: 'OpenAI',
+    baseUrl: 'https://api.openai.com/v1',
+    models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o3-mini', 'o1'],
+    defaultModel: 'gpt-4o',
+    maxTokens: 16384,
+  },
 };
 
 export interface LLMProvider {
@@ -105,4 +113,3 @@ export interface LLMProvider {
   chatStream(messages: Message[], tools: ToolDefinition[] | undefined, callbacks: StreamCallbacks): Promise<LLMResponse>;
   isConfigured(): boolean;
 }
-
