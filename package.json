@@ -1,47 +1,51 @@
-﻿{
-    "name":  "moyu-agent",
-    "version":  "0.1.0",
-    "description":  "Terminal AI coding agent with MCP support",
-    "main":  "./dist/index.js",
-    "scripts":  {
-                    "build":  "tsc",
-                    "dev":  "tsc --watch",
-                    "start":  "node dist/index.js",
-                    "prepublishOnly":  "npm run build"
-                },
-    "keywords":  [
-                     "ai",
-                     "coding",
-                     "cli",
-                     "terminal",
-                     "mcp",
-                     "agent",
-                     "deepseek",
-                     "kimi",
-                     "llm"
-                 ],
-    "author":  "moyu team",
-    "license":  "MIT",
-    "type":  "module",
-    "devDependencies":  {
-                            "typescript":  "^5.8.3",
-                            "@types/node":  "^22.15.3"
-                        },
-    "dependencies":  {
-                         "chalk":  "^5.4.1"
-                     },
-    "bin":  {
-                "moyu":  "./dist/index.js"
-            },
-    "files":  [
-                  "dist"
-              ],
-    "repository":  {
-                       "type":  "git",
-                       "url":  "git+https://github.com/zzj2004/moyu.git"
-                   },
-    "homepage":  "https://github.com/zzj2004/moyu#readme",
-    "bugs":  {
-                 "url":  "https://github.com/zzj2004/moyu/issues"
-             }
+{
+    "name": "moyu-agent",
+    "version": "0.1.0",
+    "description": "Terminal AI coding agent with MCP support",
+    "main": "./dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "start": "node dist/index.js",
+        "prepublishOnly": "npm run build"
+    },
+    "keywords": [
+        "ai",
+        "coding",
+        "cli",
+        "terminal",
+        "mcp",
+        "agent",
+        "deepseek",
+        "kimi",
+        "llm"
+    ],
+    "author": "moyu team",
+    "license": "MIT",
+    "type": "module",
+    "devDependencies": {
+        "typescript": "^5.8.3",
+        "@types/node": "^22.15.3"
+    },
+    "dependencies": {
+        "chalk": "^5.4.1"
+    },
+    "bin": {
+        "moyu": "./dist/index.js"
+    },
+    "files": [
+        "dist",
+        "moyu-mcp-server.mjs"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zzj2004/moyu.git"
+    },
+    "homepage": "https://github.com/zzj2004/moyu#readme",
+    "bugs": {
+        "url": "https://github.com/zzj2004/moyu/issues"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
 }

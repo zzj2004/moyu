@@ -72,6 +72,9 @@ export const MODEL_CAPS: Record<string, { supportsThinking: boolean; supportsThi
   'deepseek-reasoner': { supportsThinking: true, supportsThinkingEffort: true },
   'kimi-k2.6': { supportsThinking: true, supportsThinkingEffort: false },
   'kimi-k2.5': { supportsThinking: true, supportsThinkingEffort: false },
+  'o1': { supportsThinking: true, supportsThinkingEffort: false },
+  'o3-mini': { supportsThinking: true, supportsThinkingEffort: true },
+  'gpt-4o': { supportsThinking: false, supportsThinkingEffort: false },
 };
 
 export const BUILTIN_PROVIDERS: Record<string, ProviderInfo> = {
