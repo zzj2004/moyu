@@ -1,4 +1,4 @@
-/**
+﻿/**
  * moyu - Delete file tool (safe: only files and empty directories)
  */
 
@@ -16,12 +16,12 @@ export const deleteFileTool: Tool = {
       path: { type: 'string', description: 'Path to the file or empty directory to delete' },
       force: { type: 'boolean', description: 'Skip safety checks (use with caution)' },
     },
-    required: ['path'],
+    required: ['filePath'],
   },
 
   async execute(args: Record<string, unknown>, ctx: ToolContext): Promise<ToolResult> {
-    const filePath = String(args.path || '');
-    if (!filePath) return { toolName: 'file_delete', success: false, output: '', error: 'path is required' };
+    const filePath = String(args.filePath || '');
+    if (!filePath) return { toolName: 'file_delete', success: false, output: '', error: 'filePath is required' };
 
     const resolvedPath = isAbsolute(filePath) ? filePath : join(ctx.cwd, filePath);
     const relPath = relative(ctx.cwd, resolvedPath);
@@ -58,3 +58,4 @@ export const deleteFileTool: Tool = {
     }
   },
 };
+

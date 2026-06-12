@@ -1,4 +1,4 @@
-/**
+﻿/**
  * moyu - OpenAI-compatible LLM provider with streaming
  * Works with DeepSeek, Kimi (Moonshot), OpenAI, etc.
  */
@@ -68,7 +68,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
 
   setModel(model: string): void {
     if (this.availableModels.includes(model)) this._model = model;
-    else { this._model = model; }
+    else { console.warn?.('Model not in available list, keeping ' + this._model); }
   }
 
   isConfigured(): boolean { return !!this.apiKey; }

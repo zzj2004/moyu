@@ -1,4 +1,4 @@
-/**
+﻿/**
  * moyu - Rename/move file tool
  */
 
@@ -16,12 +16,12 @@ export const renameFileTool: Tool = {
       source: { type: 'string', description: 'Current path of the file/directory' },
       dest: { type: 'string', description: 'New path' },
     },
-    required: ['source', 'dest'],
+    required: ['sourcePath', 'destPath'],
   },
 
   async execute(args: Record<string, unknown>, ctx: ToolContext): Promise<ToolResult> {
-    const src = String(args.source || '');
-    const dst = String(args.dest || '');
+    const src = String(args.sourcePath || '');
+    const dst = String(args.destPath || '');
 
     if (!src || !dst) return { toolName: 'file_rename', success: false, output: '', error: 'source and dest are required' };
 
@@ -50,3 +50,4 @@ export const renameFileTool: Tool = {
     }
   },
 };
+

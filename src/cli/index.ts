@@ -1,4 +1,4 @@
-/**
+﻿/**
  * moyu - CLI entry point
  */
 
@@ -261,37 +261,27 @@ async function persistConfig(config: import('../config/types.js').MoyuConfig): P
 
 /** Interactive list selector - arrow keys select, Enter confirms, q/ESC cancels */
 async function interactiveSelect(items: string[], current: string, title: string): Promise<string | null> {
-  const stdin = process.stdin;
-  const wasRaw = stdin.isRaw;
-  let selected = Math.max(0, items.indexOf(current));
-
-  const render = () => {
-    process.stdout.write('\x1B[' + items.length + 'A\x1B[J');
-    console.log(chalk.cyan(title));
-    items.forEach((item, i) => {
-      const prefix = i === selected ? chalk.green('  ▸ ') : '    ';
-      const suffix = item === current ? chalk.gray(' (current)') : '';
-      const style = i === selected ? chalk.bold : chalk.reset;
-      process.stdout.write(prefix + style(item) + suffix + '\n');
-    });
-  };
+  const { createInterface } = await import('node:readline');
+  console.log(chalk.cyan(title));
+  items.forEach((item, i) => {
+    const marker = item === current ? chalk.gray(' (current)') : '';
+    console.log('  ' + chalk.green(String(i + 1)) + '. ' + item + marker);
+  });
+  console.log(chalk.gray('  q. Cancel'));
 
   return new Promise((resolve) => {
-    const onData = (buf: Buffer) => {
-      const key = buf.toString();
-      if (key === '\u001b[A') { selected = Math.max(0, selected - 1); render(); }
-      else if (key === '\u001b[B') { selected = Math.min(items.length - 1, selected + 1); render(); }
-      else if (key === '\r' || key === '\n') { cleanup(); resolve(items[selected]); }
-      else if (key === '\u0003' || key === 'q' || key === '\u001b') { cleanup(); resolve(null); }
-    };
-    const cleanup = () => {
-      stdin.removeListener('data', onData);
-      if (!wasRaw) try { stdin.setRawMode(false); } catch {}
-    };
-    render();
-    stdin.setRawMode(true);
-    stdin.resume();
-    stdin.on('data', onData);
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    rl.question(chalk.yellow('Enter number: '), (answer) => {
+      rl.close();
+      if (answer.toLowerCase() === 'q') { resolve(null); return; }
+      const num = parseInt(answer, 10);
+      if (num >= 1 && num <= items.length) {
+        resolve(items[num - 1]);
+      } else {
+        console.log(chalk.red('Invalid selection.'));
+        resolve(null);
+      }
+    });
   });
 }
 
@@ -356,7 +346,7 @@ async function handleCommand(input: string, state: CliState, rl: { prompt(): voi
       const picked = await interactiveSelect(
         modelList,
         state.llm.model,
-        `Available for ${state.llm.displayName} (↑↓ to move, Enter to select, q to cancel):`
+        `Available for ${state.llm.displayName} (enter number to select, q to cancel):`
       );
       if (picked && picked !== state.llm.model) {
         state.llm.setModel(picked);
@@ -612,6 +602,7 @@ export async function runCLI(): Promise<void> {
   await startInteractive(state);
   registry.cleanup();
 }
+
 
 
 

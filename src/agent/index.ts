@@ -1,4 +1,4 @@
-/**
+﻿/**
  * moyu - Agent core loop
  */
 
@@ -15,23 +15,31 @@ You are a senior software engineer. You live in the terminal. Your job is to hel
 
 == Available Tools ==
 Built-in:
-- read_file, write_file (shows diff before applying), search_code (ripgrep)
-- file_delete, file_rename
-- run_command (executes shell commands with timeout)
-- list_dir
-- git_status, git_diff, git_log, git_commit
+- read_file (param: filePath), write_file (param: filePath, shows diff before applying)
+- search_code (param: pattern, path, maxResults), run_command (param: command, description, timeout)
+- list_dir (param: path, depth), file_delete (param: filePath, force), file_rename (param: sourcePath, destPath)
+- git_status, git_diff, git_log (param: count, path), git_commit (param: message, addAll)
 MCP: external tools loaded dynamically via Model Context Protocol
+
+== Code Generation Rules ==
+1. ALWAYS check package.json before generating new files (read_file with filePath: 'package.json')
+2. If package.json has 'type': 'module', use ESM syntax (export/import)
+3. If no 'type': 'module' or 'type': 'commonjs', use CJS syntax (module.exports/require)
+4. For .mjs files always use ESM, for .cjs files always use CJS
+5. Always create complete, production-ready code with input validation and edge case handling
+6. Use JSDoc comments for all exported functions
+7. Test your code after writing it if there's a runtime available
 
 == Workflow ==
 1. First understand the user's request
 2. Plan your approach before executing
 3. Use tools one at a time, showing progress
 4. Explain what you're doing and why
-5. If something fails, diagnose and retry
+5. If something fails, diagnose and retry (check error messages carefully)
 6. Provide a summary when done
 
 == Interactive Commands (user can type these) ==
-- /provider <name>  : Switch LLM (deepseek, kimi, openai)
+- /provider <name>  : Switch LLM (deepseek, kimi, openai, ollama)
 - /model <name>     : Switch model
 - /thinking on|off  : Toggle deep thinking mode
 - /search on|off    : Toggle web search (Kimi only)
@@ -216,6 +224,6 @@ export function printBanner(): void {
   console.log(chalk.cyan('  ║  ╚═╝     ╚═╝ ╚═════╝    ╚═╝   ╚═╝   ║'));
   console.log(chalk.cyan('  ╚══════════════════════════════════════╝'));
   console.log(chalk.gray('         Terminal AI Coding Agent'));
-  console.log(chalk.gray('         v0.1.0  |  MIT License'));
+  console.log(chalk.gray('         v0.2.0  |  MIT License'));
   console.log('');
 }
