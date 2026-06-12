@@ -352,6 +352,8 @@ async function handleCommand(input: string, state: CliState, rl: { prompt(): voi
       state.messages = (session.messages || []).map(m => ({
         role: m.role as 'user' | 'assistant' | 'system' | 'tool',
         content: m.content,
+        ...(m.tool_call_id ? { tool_call_id: m.tool_call_id } : {}),
+        ...(m.tool_calls ? { tool_calls: m.tool_calls } : {}),
       }));
       console.log(chalk.green(`Session loaded: "${session.sessionId}" (${state.messages.length} messages)`));
       if (session.provider !== state.llm.name) {
