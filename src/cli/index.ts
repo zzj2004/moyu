@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import { loadConfig, getProviderApiKey } from '../config/index.js';
 import { createLLM } from '../llm/index.js';
 import { BUILTIN_PROVIDERS, PROVIDER_CAPS, MODEL_CAPS, type ContentPart } from '../llm/types.js';
+import { listProviders as getProviders } from '../llm/index.js';
 import { saveSession, loadLatestSession, loadSession, listSessions, deleteSession, autoSave } from '../session/index.js';
 import { OpenAICompatibleProvider } from '../llm/openai.js';
 import { ToolRegistry } from '../tools/index.js';
@@ -249,7 +250,7 @@ async function handleCommand(input: string, state: CliState, rl: { prompt(): voi
     case 'help':
       console.log(`
 ── Provider & Model ──
-  /provider [name]      Show/Switch provider (deepseek, kimi)
+  /provider [name]      Show/Switch provider (deepseek, kimi, openai)
   /model [name]         Show/Switch model
   /models               List models for current provider
   /providers            List providers with config status
